@@ -13,6 +13,7 @@
     "url": "git+https://github.com/rollvolet/msal-login-service.git"
   },
   "dependencies": {
+    "@azure/msal-node": "1.0.0-beta.1",
     "@lblod/mu-auth-sudo": "^0.2.0"
   }
 }
