@@ -1,0 +1,18 @@
+{
+  "name": "msal-login-service",
+  "version": "0.1.0",
+  "description": "Microservice to authenticate using Microsoft Authentication Library (MSAL)",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Erika Pauwels <erika.pauwels@redpencil.io>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rollvolet/msal-login-service.git"
+  },
+  "dependencies": {
+    "@lblod/mu-auth-sudo": "^0.2.0"
+  }
+}
