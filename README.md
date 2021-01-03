@@ -22,15 +22,17 @@ Add rules to the `dispatcher.ex` to dispatch requests to the login service. E.g.
 ## Reference
 ### Configuration
 The following enviroment variables must be configured:
-* `AUTH_CLIENT_ID` [string]: Client id of the application in Azure
-* `AUTH_CLIENT_SECRET` [string]: Client secret of the application in Azure
-* `AUTH_REDIRECT_URI` [string]: Redirect URI of the application configured in Azure
+- **AUTH_CLIENT_ID**: Client id of the application in Azure
+- **AUTH_CLIENT_SECRET**: Client secret of the application in Azure
+- **AUTH_REDIRECT_URI**: Redirect URI of the application configured in Azure
 
 The following enviroment variables can optionally be configured:
-* `AUTH_TENANT_ID` [string]: Tenant id of the organization in Azure
-* `AUTH_SCOPES` [string]: Comma-separated string of scopes to grant access for (default `User.Read`)
-* `RESOURCE_BASE_URI` [string]: Base URI to use for resources created by this service. The URI must end with a trailing slash! (default: `http://data.rollvolet.be/`)
-* `DEBUG_MSAL_AUTH`: When set, verbose logging of the interaction with Microsoft Identity Platform
+- **AUTH_TENANT_ID**: Tenant id of the organization in Azure
+- **AUTH_SCOPES**: Comma-separated string of scopes to grant access for (default `User.Read`)
+- **DEBUG_MSAL_AUTH**: When set, verbose logging of the interaction with Microsoft Identity Platform
+- **USERS_GRAPH** : graph in which the person and account resources will be stored. Defaults to `http://mu.semte.ch/graphs/users`.
+- **SESSIONS_GRAPH** : graph in which the session resources will be stored. Defaults to `http://mu.semte.ch/graphs/sessions`.
+- **RESOURCE_BASE_URI**: Base URI to use for resources created by this service. The URI must end with a trailing slash! (default: `http://data.rollvolet.be/`)
 
 ### API
 #### POST /sessions
