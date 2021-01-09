@@ -28,7 +28,7 @@ The following enviroment variables must be configured:
 
 The following enviroment variables can optionally be configured:
 - **AUTH_TENANT_ID**: Tenant id of the organization in Azure
-- **AUTH_SCOPES**: Comma-separated string of scopes to grant access for (default `User.Read`)
+- **AUTH_SCOPES**: Whitespace-separated string of scopes to grant access for (default `User.Read`)
 - **DEBUG_MSAL_AUTH**: When set, verbose logging of the interaction with Microsoft Identity Platform
 - **USERS_GRAPH** : graph in which the person and account resources will be stored. Defaults to `http://mu.semte.ch/graphs/users`.
 - **SESSIONS_GRAPH** : graph in which the session resources will be stored. Defaults to `http://mu.semte.ch/graphs/sessions`.
