@@ -1,6 +1,7 @@
 import { app, errorHandler } from 'mu';
 import { getSessionIdHeader, error } from './utils';
-import { getAccessToken } from './lib/msal';
+import TokenManager, { getTokenInfo } from './lib/token-manager';
+import TokenManagerWithRefresh from './lib/token-manager-with-refresh';
 import { removeSession,
          ensureUserAndAccount, insertNewSessionForAccount,
          selectAccountBySession, selectCurrentSession } from './lib/session';
@@ -16,6 +17,8 @@ import { removeSession,
       process.exit(1);
     }
   });
+
+const tokenManager = process.env.AUTH_REFRESH_TOKENS ? new TokenManagerWithRefresh() : new TokenManager();
 
 /**
  * Log the user in by creating a new session, i.e. attaching the user's account to a session.
@@ -45,7 +48,7 @@ app.post('/sessions', async function(req, res, next) {
   try {
     let authenticationResult;
     try {
-      authenticationResult = await getAccessToken(authorizationCode);
+      authenticationResult = await tokenManager.getAccessToken(authorizationCode);
     } catch(e) {
       console.log(`Failed to retrieve access token for authorization code: ${e.message || e}`);
       return res.header('mu-auth-allowed-groups', 'CLEAR').status(401).end();
@@ -57,7 +60,13 @@ app.post('/sessions', async function(req, res, next) {
 
     const { accountUri, accountId } = await ensureUserAndAccount(authenticationResult);
 
-    const { sessionId } = await insertNewSessionForAccount(accountUri, sessionUri);
+    const tokenInfo = {
+      homeAccountId: authenticationResult.account.homeAccountId,
+      accessToken: authenticationResult.accessToken,
+      expirationDate: new Date(Date.parse(authenticationResult.expiresOn))
+    };
+    const { sessionId } = await insertNewSessionForAccount(accountUri, sessionUri, tokenInfo);
+    tokenManager.scheduleTokenRefresh(sessionUri, tokenInfo);
 
     return res.header('mu-auth-allowed-groups', 'CLEAR').status(201).send({
       links: {
@@ -101,6 +110,7 @@ app.delete('/sessions/current', async function(req, res, next) {
       return error(res, 'Invalid session');
 
     await removeSession(sessionUri);
+    await tokenManager.cancelTokenRefresh(sessionUri);
 
     return res.header('mu-auth-allowed-groups', 'CLEAR').status(204).end();
   } catch(e) {
@@ -121,31 +131,40 @@ app.get('/sessions/current', async function(req, res, next) {
 
   try {
     const { accountUri, accountId } = await selectAccountBySession(sessionUri);
-    if (!accountUri)
-      return error(res, 'Invalid session');
+    if (!accountUri) {
+      res.header('mu-auth-allowed-groups', 'CLEAR');
+      return error(res, 'Invalid session. No related account found.');
+    }
 
     const { sessionId, name, username } = await selectCurrentSession(sessionUri);
 
-    return res.status(200).send({
-      links: {
-        self: '/sessions/current'
-      },
-      data: {
-        type: 'sessions',
-        id: sessionId,
-        attributes: {
-          name,
-          username
+    if (!tokenManager.hasValidToken(sessionUri)) {
+      await removeSession(sessionUri);
+      res.header('mu-auth-allowed-groups', 'CLEAR');
+      return error(res, 'Invalid session. No access token available.');
+    } else {
+      return res.status(200).send({
+        links: {
+          self: '/sessions/current'
+        },
+        data: {
+          type: 'sessions',
+          id: sessionId,
+          attributes: {
+            name,
+            username
+          }
+        },
+        relationships: {
+          account: {
+            links: { related: `/accounts/${accountId}` },
+            data: { type: 'accounts', id: accountId }
+          }
         }
-      },
-      relationships: {
-        account: {
-          links: { related: `/accounts/${accountId}` },
-          data: { type: 'accounts', id: accountId }
-        }
-      }
-    });
+      });
+    }
   } catch(e) {
+    res.header('mu-auth-allowed-groups', 'CLEAR');
     return next(new Error(e.message));
   }
 });

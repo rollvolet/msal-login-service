@@ -19,6 +19,23 @@ Add rules to the `dispatcher.ex` to dispatch requests to the login service. E.g.
   end
 ```
 
+## How-to guides
+### How to keep the OAuth access tokens fresh
+On login the access token retrieved from the Microsoft Identity Platform is stored in the triplestore. That way other microservices can use the token to maken requests to 3rd party APIs on behalf of the user.
+
+However, the access tokens only have a limited lifetime (default 1h). To enable automatic refresh of the access tokens in the backend before they expire, add the following snippet to your `docker-compose.yml`
+
+```
+login:
+  image: rollvolet/msal-login-service
+  environment:
+    AUTH_REFRESH_TOKENS: "true"
+  volumes:
+    - ./data/token-cache:/cache
+```
+
+The token cache will be persisted in `./data/token-cache/token-cache.json`. The persistence is required to restore token refreshes on (re)start of the login service. If a token refresh cannot be restored, the session will be logged out in the triplestore.
+
 ## Reference
 ### Configuration
 The following enviroment variables must be configured:
@@ -29,6 +46,7 @@ The following enviroment variables must be configured:
 The following enviroment variables can optionally be configured:
 - **AUTH_TENANT_ID**: Tenant id of the organization in Azure
 - **AUTH_SCOPES**: Whitespace-separated string of scopes to grant access for (default `User.Read`)
+- **AUTH_REFRESH_TOKENS**: Enable automatic token refreshes before expiry time (disabled by default)
 - **DEBUG_MSAL_AUTH**: When set, verbose logging of the interaction with Microsoft Identity Platform
 - **USERS_GRAPH** : graph in which the person and account resources will be stored. Defaults to `http://mu.semte.ch/graphs/users`.
 - **SESSIONS_GRAPH** : graph in which the session resources will be stored. Defaults to `http://mu.semte.ch/graphs/sessions`.
