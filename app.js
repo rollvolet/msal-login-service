@@ -2,7 +2,7 @@ import { app, errorHandler } from 'mu';
 import { getSessionIdHeader, error } from './utils';
 import TokenManager, { getTokenInfo } from './lib/token-manager';
 import TokenManagerWithRefresh from './lib/token-manager-with-refresh';
-import { removeSession,
+import { removeSession, getUserGroups,
          ensureUserAndAccount, insertNewSessionForAccount,
          selectAccountBySession, selectCurrentSession } from './lib/session';
 
@@ -65,6 +65,8 @@ app.post('/sessions', async function(req, res, next) {
       accessToken: authenticationResult.accessToken,
       expirationDate: new Date(Date.parse(authenticationResult.expiresOn))
     };
+
+    const userGroups = await getUserGroups(accountUri);
     const { sessionId } = await insertNewSessionForAccount(accountUri, sessionUri, tokenInfo);
     tokenManager.scheduleTokenRefresh(sessionUri, tokenInfo);
 
@@ -77,7 +79,8 @@ app.post('/sessions', async function(req, res, next) {
         id: sessionId,
         attributes: {
           name: authenticationResult.account.name,
-          username: authenticationResult.account.username
+          username: authenticationResult.account.username,
+          'user-groups': userGroups
         }
       },
       relationships: {
@@ -137,6 +140,7 @@ app.get('/sessions/current', async function(req, res, next) {
     }
 
     const { sessionId, name, username } = await selectCurrentSession(sessionUri);
+    const userGroups = await getUserGroups(accountUri);
 
     if (!tokenManager.hasValidToken(sessionUri)) {
       await removeSession(sessionUri);
@@ -152,7 +156,8 @@ app.get('/sessions/current', async function(req, res, next) {
           id: sessionId,
           attributes: {
             name,
-            username
+            username,
+            'user-groups': userGroups
           }
         },
         relationships: {

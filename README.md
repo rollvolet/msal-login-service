@@ -50,6 +50,7 @@ The following enviroment variables can optionally be configured:
 - **DEBUG_MSAL_AUTH**: When set, verbose logging of the interaction with Microsoft Identity Platform
 - **USERS_GRAPH** : graph in which the person and account resources will be stored. Defaults to `http://mu.semte.ch/graphs/users`.
 - **SESSIONS_GRAPH** : graph in which the session resources will be stored. Defaults to `http://mu.semte.ch/graphs/sessions`.
+- **DEFAULT_USER_GROUP** : default user group to assign to new users. Defaults to `http://data.rollvolet.be/user-groups/employee`.
 - **RESOURCE_BASE_URI**: Base URI to use for resources created by this service. The URI must end with a trailing slash! (default: `http://data.rollvolet.be/`)
 
 ### API
