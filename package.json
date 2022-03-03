@@ -1,6 +1,6 @@
 {
   "name": "msal-login-service",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Microservice to authenticate using Microsoft Authentication Library (MSAL)",
   "main": "app.js",
   "scripts": {
