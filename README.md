@@ -6,14 +6,14 @@ Microservice to authenticate using Microsoft Authentication Library (MSAL)
 ### Adding the service to your stack
 Add the following snippet to your `docker-compose.yml` to include the login service in your project.
 
-```
+```yaml
 login:
   image: rollvolet/msal-login-service
 ```
 
 Add rules to the `dispatcher.ex` to dispatch requests to the login service. E.g.
 
-```
+```elixir
   match "/sessions/*path", %{ accept: %{ json: true } } do
     Proxy.forward conn, path, "http://login/sessions/"
   end
@@ -21,11 +21,11 @@ Add rules to the `dispatcher.ex` to dispatch requests to the login service. E.g.
 
 ## How-to guides
 ### How to keep the OAuth access tokens fresh
-On login the access token retrieved from the Microsoft Identity Platform is stored in the triplestore. That way other microservices can use the token to maken requests to 3rd party APIs on behalf of the user.
+On login the access token retrieved from the Microsoft Identity Platform is stored in the triplestore. That way other microservices can use the token to make requests to 3rd party APIs on behalf of the user.
 
 However, the access tokens only have a limited lifetime (default 1h). To enable automatic refresh of the access tokens in the backend before they expire, add the following snippet to your `docker-compose.yml`
 
-```
+```yaml
 login:
   image: rollvolet/msal-login-service
   environment:
@@ -62,7 +62,7 @@ Before creating a new session, the given authorization code gets exchanged for a
 The service uses the following claims:
 * `authenticationResult.uniqueId`: identifier of the person
 * `authenticationResult.account.name`: name of the person
-* `authenticationResult.localAccountId`: identifier of the account
+* `authenticationResult.homeAccountId`: identifier of the account
 * `authenticationResult.account.username`: username of the account
 
 ##### Request body
@@ -153,4 +153,51 @@ Get the current session
 
 ###### 400 Bad Request
 If session header is missing or invalid. The header should be automatically set by the [identifier](https://github.com/mu-semtech/mu-identifier).
+
+
+### Data model
+#### Used prefixes
+| Prefix  | URI                                              |
+|---------|--------------------------------------------------|
+| dct     | http://purl.org/dc/terms/                        |
+| foaf    | http://xmlns.com/foaf/0.1/                       |
+| session | http://mu.semte.ch/vocabularies/session/         |
+| oauth   | http://data.rollvolet.be/vocabularies/oauth-2.0/ |
+
+#### User
+##### Class
+`foaf:Person`
+##### Properties
+| Name        | Predicate        | Range                | Definition                 |
+|-------------|------------------|----------------------|----------------------------|
+| identifier  | `dct:identifier` | `xsd:string`         | Identifier of the person   |
+| name        | `foaf:name`      | `xsd:string`         | Name of the person         |
+| user-groups | `foaf:member`    | `foaf:Group`         | Groups the user belongs to |
+| account     | `foaf:account`   | `foaf:OnlineAccount` | User's account             |
+
+#### Account
+##### Class
+`foaf:OnlineAccount`
+##### Properties
+| Name       | Predicate                     | Range                | Definition                                        |
+|------------|-------------------------------|----------------------|---------------------------------------------------|
+| identifier | `dct:identifier`              | `xsd:string`         | Identifier of the account                         |
+| name       | `foaf:accountName`            | `xsd:string`         | Name of the account                               |
+| created    | `dct:created`                 | `xsd:dateTime`       | Creation date of the account                      |
+| homepage   | `foaf:accountServiceHomepage` | `rdfs:Resource`      | `https://github.com/rollvolet/msal-login-service` |
+
+#### Mu session
+##### Properties
+| Name     | Predicate         | Range                | Definition                |
+|----------|-------------------|----------------------|---------------------------|
+| account  | `session:account` | `foaf:OnlineAccount` | Account of to the session |
+| modified | `dct:modified`    | `xsd:dateTime`       | Last modification time    |
+
+#### Oauth session
+##### Properties
+| Name            | Predicate              | Range          | Definition                                 |
+|-----------------|------------------------|----------------|--------------------------------------------|
+| session         | `oauth:authenticates`  | `mu-session`   | Mu-session the oauth-session authenticates |
+| token           | `oauth:tokenValue`     | `xsd:string`   | Oauth access token                         |
+| expiration-date | `oauth:expirationDate` | `xsd:dateTime` | Expiration date of the access token        |
 
