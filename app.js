@@ -114,7 +114,6 @@ app.delete('/sessions/current', async function(req, res, next) {
 
     await removeSession(sessionUri);
     await tokenManager.cancelTokenRefresh(sessionUri);
-
     return res.header('mu-auth-allowed-groups', 'CLEAR').status(204).end();
   } catch(e) {
     return next(new Error(e.message));
@@ -144,6 +143,7 @@ app.get('/sessions/current', async function(req, res, next) {
 
     if (!tokenManager.hasValidToken(sessionUri)) {
       await removeSession(sessionUri);
+      await tokenManager.cancelTokenRefresh(sessionUri);
       res.header('mu-auth-allowed-groups', 'CLEAR');
       return error(res, 'Invalid session. No access token available.');
     } else {
