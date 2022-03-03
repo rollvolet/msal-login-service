@@ -2,7 +2,7 @@ import { app, errorHandler } from 'mu';
 import { getSessionIdHeader, error } from './utils';
 import TokenManager, { getTokenInfo } from './lib/token-manager';
 import TokenManagerWithRefresh from './lib/token-manager-with-refresh';
-import { removeSession, getUserGroups,
+import { updateSessionModificationDate, removeSession, getUserGroups,
          ensureUserAndAccount, insertNewSessionForAccount,
          selectAccountBySession, selectCurrentSession } from './lib/session';
 
@@ -147,6 +147,7 @@ app.get('/sessions/current', async function(req, res, next) {
       res.header('mu-auth-allowed-groups', 'CLEAR');
       return error(res, 'Invalid session. No access token available.');
     } else {
+      await updateSessionModificationDate(sessionUri);
       return res.status(200).send({
         links: {
           self: '/sessions/current'
