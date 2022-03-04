@@ -18,7 +18,19 @@ import { updateSessionModificationDate, removeSession, getUserGroups,
     }
   });
 
-const tokenManager = process.env.AUTH_REFRESH_TOKENS ? new TokenManagerWithRefresh() : new TokenManager();
+let tokenManager;
+if (process.env.AUTH_REFRESH_TOKENS) {
+  tokenManager = new TokenManagerWithRefresh();
+
+  // Add middleware to scope token cache by session URI for each incoming request
+  app.use(function (req, res, next) {
+    const sessionUri = getSessionIdHeader(req);
+    tokenManager.scopeMsalCache(sessionUri);
+    next();
+  });
+} else {
+  tokenManager = new TokenManager();
+}
 
 /**
  * Log the user in by creating a new session, i.e. attaching the user's account to a session.

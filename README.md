@@ -30,11 +30,13 @@ login:
   image: rollvolet/msal-login-service
   environment:
     AUTH_REFRESH_TOKENS: "true"
+token-cache:
+  image: redis:6.2.6
   volumes:
-    - ./data/token-cache:/cache
+    - ./data/token-cache:/data
 ```
 
-The token cache will be persisted in `./data/token-cache/token-cache.json`. The persistence is required to restore token refreshes on (re)start of the login service. If a token refresh cannot be restored, the session will be logged out in the triplestore.
+The token cache will be persisted in `./data/token-cache`. The persistence is required to restore token refreshes on (re)start of the login service. If a token refresh cannot be restored, the session will be logged out in the triplestore.
 
 ## Reference
 ### Configuration
@@ -47,6 +49,7 @@ The following enviroment variables can optionally be configured:
 - **AUTH_TENANT_ID**: Tenant id of the organization in Azure
 - **AUTH_SCOPES**: Whitespace-separated string of scopes to grant access for (default `User.Read`)
 - **AUTH_REFRESH_TOKENS**: Enable automatic token refreshes before expiry time (disabled by default)
+- **REDIS_ENDPOINT**: URL of the Redis endpoint, used as token cache (default `redis://token-cache:6379`). Only applicable if token refresh is enabled.
 - **DEBUG_MSAL_AUTH**: When set, verbose logging of the interaction with Microsoft Identity Platform
 - **USERS_GRAPH** : graph in which the person and account resources will be stored. Defaults to `http://mu.semte.ch/graphs/users`.
 - **SESSIONS_GRAPH** : graph in which the session resources will be stored. Defaults to `http://mu.semte.ch/graphs/sessions`.
