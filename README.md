@@ -157,6 +157,38 @@ Get the current session
 ###### 400 Bad Request
 If session header is missing or invalid. The header should be automatically set by the [identifier](https://github.com/mu-semtech/mu-identifier).
 
+#### GET /sessions/current/oauth
+Get the current Oauth session that authenticates the mu-session
+
+##### Response
+###### 200 Created
+
+```javascript
+{
+  "links": {
+    "self": "sessions/current/oauth"
+  },
+  "data": {
+    "type": "sessions",
+    "id": "b178ba66-206e-4551-b41e-4a46983912c0"
+    "relationships": {
+      "authenticated-session": {
+        "links": {
+          "related": "/sessions/f6419af0-c90f-465f-9333-e993c43e6cf2"
+        },
+        "data": {
+          "type": "sessions",
+          "id": "f6419af0-c90f-465f-9333-e993c43e6cf2"
+        }
+      }
+    }
+  }
+}
+```
+
+###### 400 Bad Request
+If session header is missing or invalid. The header should be automatically set by the [identifier](https://github.com/mu-semtech/mu-identifier).
+
 
 ### Data model
 #### Used prefixes
