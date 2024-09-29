@@ -1,10 +1,10 @@
 import { app, errorHandler } from 'mu';
 import { getSessionIdHeader, error } from './utils';
-import TokenManager, { getTokenInfo } from './lib/token-manager';
+import TokenManager from './lib/token-manager';
 import TokenManagerWithRefresh from './lib/token-manager-with-refresh';
 import { updateSessionModificationDate, removeSession, getUserGroups,
-         ensureUserAndAccount, insertNewSessionForAccount,
-         selectAccountBySession, selectCurrentSession } from './lib/session';
+         ensureUserAndAccount, insertNewSessionForAccount, selectAccountBySession,
+         selectCurrentSession, selectCurrentOauthSession } from './lib/session';
 
 /**
  * Configuration validation on startup
@@ -187,5 +187,48 @@ app.get('/sessions/current', async function(req, res, next) {
   }
 });
 
+/**
+ * Get the current OAuth session that authenticates the mu-session
+ *
+ * @return [200] The current OAuth session
+ * @return [400] If the session header is missing or invalid
+*/
+app.get('/sessions/current/oauth', async function(req, res, next) {
+  const sessionUri = getSessionIdHeader(req);
+  if (!sessionUri)
+    return next(new Error('Session header is missing'));
+
+  if (tokenManager.hasValidToken(sessionUri)) {
+    const { sessionId, oauthSessionId, oauthSessionUri } = await selectCurrentOauthSession(sessionUri);
+
+    if (oauthSessionId) {
+      return res.status(200).send({
+        links: {
+          self: '/sessions/current/oauth'
+        },
+        data: {
+          type: 'sessions',
+          id: oauthSessionId,
+          attributes: {
+            uri: oauthSessionUri,
+          },
+          relationships: {
+            'authenticated-session': {
+              links: { related: `/sessions/${sessionId}` },
+              data: { type: 'sessions', id: sessionId }
+            }
+          },
+        },
+      });
+    }
+  }
+
+  return res.status(200).send({
+    links: {
+      self: '/sessions/current/oauth'
+    },
+    data: null,
+  });
+});
 
 app.use(errorHandler);
