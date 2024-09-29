@@ -171,12 +171,12 @@ app.get('/sessions/current', async function(req, res, next) {
             name,
             username,
             'user-groups': userGroups
-          }
-        },
-        relationships: {
-          account: {
-            links: { related: `/accounts/${accountId}` },
-            data: { type: 'accounts', id: accountId }
+          },
+          relationships: {
+            account: {
+              links: { related: `/accounts/${accountId}` },
+              data: { type: 'accounts', id: accountId }
+            }
           }
         }
       });
