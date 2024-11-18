@@ -93,14 +93,14 @@ app.post('/sessions', async function(req, res, next) {
           name: authenticationResult.account.name,
           username: authenticationResult.account.username,
           'user-groups': userGroups
+        },
+        relationships: {
+          account: {
+            links: { related: `/accounts/${accountId}` },
+            data: { type: 'accounts', id: accountId }
+          }
         }
       },
-      relationships: {
-        account: {
-          links: { related: `/accounts/${accountId}` },
-          data: { type: 'accounts', id: accountId }
-        }
-      }
     });
   } catch(e) {
     return next(new Error(e.message));
