@@ -207,8 +207,15 @@ If session header is missing or invalid. The header should be automatically set 
 |-------------|------------------|----------------------|----------------------------|
 | identifier  | `dct:identifier` | `xsd:string`         | Identifier of the person   |
 | name        | `foaf:name`      | `xsd:string`         | Name of the person         |
-| user-groups | `foaf:member`    | `foaf:Group`         | Groups the user belongs to |
 | account     | `foaf:account`   | `foaf:OnlineAccount` | User's account             |
+
+#### Group
+##### Class
+`foaf:Group`
+#####
+| Name        | Predicate        | Range                | Definition                 |
+|-------------|------------------|----------------------|----------------------------|
+| users       | `foaf:member`    | `foaf:Person`        | Users that belong to a group |
 
 #### Account
 ##### Class
